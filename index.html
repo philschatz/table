@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+  <head>
+    <title>ABL Helper</title>
+    <style>
+    </style>
+  </head>
+  <body>
+    <h1>Hello!</h1>
+    
+    <script type="text/javascript">//<![CDATA[
+      ;(async function () {
+        
+        const abl = fetch('https://openstax.github.io/content-manager-approved-books/approved-book-list.json')
+        console.log(abl)
+        
+      })().then(null, (err) => { throw err })
+    // ]]></script>
+  </body>
+</html>
