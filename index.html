@@ -11,7 +11,7 @@
     <script type="text/javascript">//<![CDATA[
       ;(async function () {
         
-        const abl = fetch('https://openstax.github.io/content-manager-approved-books/approved-book-list.json')
+        const abl = await fetch('https://openstax.github.io/content-manager-approved-books/approved-book-list.json')
         console.log(abl)
         
       })().then(null, (err) => { throw err })
