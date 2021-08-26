@@ -1,20 +1,114 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
-  <head>
+
+<head>
     <title>ABL Helper</title>
     <style>
+        pre {
+            background-color: #ccc;
+            max-height: 20em;
+            overflow-y: scroll;
+        }
     </style>
-  </head>
-  <body>
-    <h1>Hello!</h1>
-    
+</head>
+
+<body>
+    <h1>ABL</h1>
+    <p>Uncheck any items you want to remove from the ABL and then copy the updated JSON at the bottom of the page</button></p>
+
+    <input type="text" id="myInput" onkeyup="myFilter()" placeholder="Filter the rows..">
+
+    <table id="myTable">
+        <tr class="header">
+            <th>Keep?</th>
+            <th>collection_id</th>
+            <th>content_version</th>
+            <th>min_code_version</th>
+        </tr>
+    </table>
+
+    <p>Click the JSON below, copy it, and paste it into the ABL</p>
+    <textarea id="myOutput" onclick="this.select()" rows="20" cols="80"></textarea>
+
     <script type="text/javascript">//<![CDATA[
-      ;(async function () {
-        
-        const abl = await fetch('https://openstax.github.io/content-manager-approved-books/approved-book-list.json')
-        console.log(abl)
-        
-      })().then(null, (err) => { throw err })
+        const myTable = document.getElementById('myTable')
+        const myInput = document.getElementById('myInput')
+        const myOutput = document.getElementById('myOutput')
+        let abl
+
+            ; (async function () {
+
+                const resp = await fetch('https://openstax.github.io/content-manager-approved-books/approved-book-list.json')
+                if (resp.status !== 200) {
+                    alert(`Problem fetching the ABL. Http status code: ${resp.status}`)
+                    return
+                }
+                abl = await resp.json()
+
+                abl.approved_versions.forEach(v => {
+                    const keepCheckbox = document.createElement('input')
+                    const tdKeep = document.createElement('td')
+                    const tdId = document.createElement('td')
+                    const tdContentVersion = document.createElement('td')
+                    const tdMinCodeVersion = document.createElement('td')
+                    keepCheckbox.setAttribute('type', 'checkbox')
+                    keepCheckbox.checked = true
+                    keepCheckbox.onclick = buildJSON
+                    tdKeep.appendChild(keepCheckbox)
+                    tdId.append(v.collection_id)
+                    tdContentVersion.append(v.content_version)
+                    tdMinCodeVersion.append(v.min_code_version)
+
+                    const tr = document.createElement('tr')
+                    tr.appendChild(tdKeep)
+                    tr.appendChild(tdId)
+                    tr.appendChild(tdContentVersion)
+                    tr.appendChild(tdMinCodeVersion)
+                    myTable.appendChild(tr)
+                })
+
+                myFilter()
+                buildJSON()
+
+            })().then(null, (err) => { throw err })
+
+        function myFilter() {
+            const filter = myInput.value.toUpperCase();
+            const tr = myTable.querySelectorAll("tr");
+
+            if (!filter) return
+
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 0; i < tr.length; i++) {
+                const td = tr[i].querySelectorAll("td")[0];
+                if (td) {
+                    txtValue = tr[i].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function buildJSON() {
+            const abl2 = {...abl}
+            abl2.approved_versions = []
+
+            const rows = myTable.querySelectorAll("tr");
+            rows.forEach((row, i) => {
+                const checkbox = row.querySelector('input[type="checkbox"]')
+                if (checkbox && checkbox.checked) {
+                    abl2.approved_versions.push(abl.approved_versions[i - 1 /*HTML table has a header row*/])
+                } else {
+                    console.log('Skipping', i)
+                }
+            })
+
+            myOutput.value = JSON.stringify(abl2, null, 4)
+        }
     // ]]></script>
-  </body>
+</body>
+
 </html>
